@@ -4,9 +4,9 @@ from fuzzywuzzy import fuzz
 import csv
 import json
 
-def fuzzy_check(target, arr, threshold):
+def fuzzy_check(target, arr, threshold, check):
     for y in arr:
-        if fuzz.ratio(str(target), str(y)) >= threshold:
+        if fuzz.ratio(str(target), str(y)) >= threshold and clean_entityname[str(y)] not in check:
             return [target,y]
     return None
 
@@ -48,27 +48,37 @@ Given unique rows in pitchbook.csv grouped by fundname,
 In both cases if a match condition is met, perform the following:
     a) if there exists a match, perform a fuzzy check on the lastnames across the associated fundname and entityname
     b) if the threshold for fuzzy match on lastnames is met, retrieve [fundname, fundid, entityname, cik]
+Also keeps track of an array, matched_entitynames to ensure that no entityname is matched more than once
 """
 data = []
+matched_entitynames = set()
+unmatched = {}
 for key_p, item_p in pitchbook_lastnames.items():
     key_p_clean = clean.clean_up_company_names(key_p) 
     # DIRECT MATCHING
     if key_p_clean in clean_entityname_lastname.keys(): 
         item_f = clean_entityname_lastname.get(key_p_clean)
-        if fuzzy_check_lastnames(item_p, item_f, 90): 
+        if fuzzy_check_lastnames(item_p, item_f, 90) and clean_entityname[str(key_p_clean)] not in matched_entitynames:
             entry = [key_p, clean_fundname_fundid[str(key_p_clean)][0], clean_entityname[str(key_p_clean)], clean_entityname_cik[str(key_p_clean)][0]]
             data.append(entry)
-    else: # FUZZY MATCHING
-        check = fuzzy_check(key_p_clean, clean_entityname_lastname.keys(), 90)
-        if check:
-            p, f = check[0], check[1]
-            if fuzzy_check_lastnames(item_p, clean_entityname_lastname[f], 90):
-                entry = [key_p, clean_fundname_fundid[str(p)][0], clean_entityname[str(f)], clean_entityname_cik[str(f)][0]]
-                data.append(entry)
+            matched_entitynames.add(clean_entityname[str(key_p_clean)])
+    else:
+        unmatched[key_p] = item_p
+        
+# FUZZY MATCHING FOR NAMES W/ NO DIRECT MATCHINGS    
+for key_p, item_p in unmatched.items():
+    key_p_clean = clean.clean_up_company_names(key_p) 
+    check = fuzzy_check(key_p_clean, clean_entityname_lastname.keys(), 90, matched_entitynames)
+    if check:
+        p, f = check[0], check[1]
+        if fuzzy_check_lastnames(item_p, clean_entityname_lastname[f], 90) and clean_entityname[str(f)] not in matched_entitynames:
+            entry = [key_p, clean_fundname_fundid[str(p)][0], clean_entityname[str(f)], clean_entityname_cik[str(f)][0]]
+            data.append(entry)
+            matched_entitynames.add(clean_entityname[str(f)])
 
 # WRITE DATA TO FILE
 columns = ['fundname', 'fundid', 'entityname', 'cik']
-file_path = 'match.csv'
+file_path = 'fuzzy_match.csv'
 with open(file_path, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(columns)

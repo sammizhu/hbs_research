@@ -14,8 +14,8 @@ def get_linkedin_pfp(profile_data):
     driver = webdriver.Chrome()
     driver.get('https://www.linkedin.com/login')
 
-    email = "zhutofu@gmail.com"  # Replace with your email
-    password = "072303SZCute!"  # Replace with your password
+    email = ""  # Replace with your email
+    password = ""  # Replace with your password
 
     wait = WebDriverWait(driver, 10)
 

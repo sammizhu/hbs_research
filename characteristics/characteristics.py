@@ -87,8 +87,21 @@ def VC_tagging(experience_file_path):
             else: experience_file.loc[index, 'exp_length'] = row['end_year'] - row['start_year'] + 1
     experience_file.to_csv(experience_file_path, index=False)
 
+##################################
+## REPLACE WITH DESIRED STD_URL ##
+## NOTE: not all std_url will   ##
+## produce results because of   ##
+## the year constraints. Some   ##
+## examples to use are listed   ##
+## below.                       ##
+##################################
+# https://www.linkedin.com/in/adelson
+# https://www.linkedin.com/in/jtlonsdale
+# https://www.linkedin.com/in/pengtong
+# https://www.linkedin.com/in/limky
+# https://www.linkedin.com/in/meyermalka
 
-characteristics("https://www.linkedin.com/in/jtlonsdale")
+characteristics("https://www.linkedin.com/in/will-griffith-a51a9237")
 columns = ['cik', 'cik_group', 'employee', 'std_url', 'profile_url', 'company_name', 'company_id', 'start_year', 
 'end_year', 'yearfounded', 'experience_type', 'exp_length', 'fulltitle']
 

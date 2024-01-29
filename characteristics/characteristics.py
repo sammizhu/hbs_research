@@ -92,10 +92,10 @@ characteristics("https://www.linkedin.com/in/jtlonsdale")
 columns = ['cik', 'cik_group', 'employee', 'std_url', 'profile_url', 'company_name', 'company_id', 'start_year', 
 'end_year', 'yearfounded', 'experience_type', 'exp_length', 'fulltitle']
 
-with open('/Users/sammizhu/research/hbs_research/characteristics/job.txt', mode='w', newline='') as file:
+with open('/Users/sammizhu/research/hbs_research/characteristics/data.txt', mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(columns)
     writer.writerows(job_history_dict)
 
-start_up_tagging('/Users/sammizhu/research/hbs_research/characteristics/job.txt')
-VC_tagging('/Users/sammizhu/research/hbs_research/characteristics/job.txt')
+start_up_tagging('/Users/sammizhu/research/hbs_research/characteristics/data.txt')
+VC_tagging('/Users/sammizhu/research/hbs_research/characteristics/data.txt')

@@ -27,8 +27,11 @@ def prior_experience(stdized_url, founding_year):
             profile_url = row["profile_url"]
             highest_degree = row["highest_degree"]
 
+            # We only want to keep the data if the education was completed before the founding year
             if end_year < founding_year or not math.isnan(end_year):
                 data = (std_url, end_year, top50, highest_degree)
+                # Idea is to store each person's relevant education history in a dictionary to make 
+                # comparison with for individual job experiences later
                 if data not in edu_history_dict:
                     edu_history_dict.append(data)
 
@@ -50,15 +53,21 @@ def prior_experience(stdized_url, founding_year):
                 fulltitle = relevant_titles.lower()
             except:
                 fulltitle = ""
-            founder = any(substring in fulltitle for substring in ["ounder", "wner", "ounding"])
-            partners = any(substring in fulltitle for substring in ["partner", "managing director", "general partner", "managing partner", "chief executive officer", "senior partner", "general director", "ceo"])
+            founder = any(substring in fulltitle for substring in ["ounder", "wner", "ounding"]) # translated from Stata function
+            partners = any(substring in fulltitle for substring in ["partner", "managing director", "general partner", 
+                            "managing partner", "chief executive officer", "senior partner", "general director", "ceo"]) # translated from Stata function
             
+            # Only want to collect data is the person's role was a founder or partner,
+            # if the start year is before the founding_year, and there is a valid company_id
             if founder or partners:
                 if math.isnan(start_year) or start_year < founding_year:
                     if not math.isnan(company_id):
                         end_school_year = 0
                         top50_var = 0
+                        # For each of these experiences, we'll go through the edu_history_dict that was previously populated in order to find
+                        # whether or not by the point of *this* job experience, the person has had attended a top 50 school or gotten their grad degree
                         for (std_url, end, top50, highest_degree) in edu_history_dict:
+                            # Only count data if person attended this school before their company was founded
                             if end < yearfounded:
                                 if top50 == 1:
                                     top50_var = 1
@@ -71,8 +80,10 @@ def prior_experience(stdized_url, founding_year):
 
 """
 Tag experineces from Experience File as Start-Up
+    --> Translated from Stata function
 """
 def start_up_tagging(experience_file_path):
+    # Load the startup experience data and filter for rows with a match
     df_startup_exp = pd.read_csv("/Users/sammizhu/Downloads/input/pb_startup_exp_Lk_verified.csv")
     df_startup_exp = df_startup_exp[df_startup_exp['Match?'] == "Yes"]
     df_startup_exp = df_startup_exp[['LinkedIn_ID']]
@@ -81,24 +92,33 @@ def start_up_tagging(experience_file_path):
     start_up_ids = list(df_startup_exp['company_id'])
     
     experience_file = pd.read_csv(experience_file_path)
+    
     # Iterate over rows and update columns
     for index, row in experience_file.iterrows():
         company_id = row['company_id']
+        
         if company_id in start_up_ids and 'founder' in row['fulltitle']:
             experience_file.loc[index, 'experience_type'] = 'Start-Up'
+            
+            # If there is no end_year, then temporarily mark is current_year for calculation purposes
             end_year = row['end_year']
             if math.isnan(end_year):
                 end_year = 2024
+            
+            # Calculate experience length
             experience_file.loc[index, 'exp_length'] = end_year - row['start_year'] + 1
             if end_year > row['yearfounded'] and row['yearfounded'] - row['start_year'] > 0:
                 experience_file.loc[index, 'exp_length'] = row['yearfounded'] - row['start_year'] 
+    
     experience_file.to_csv(experience_file_path, index=False)
 
 
 """
 Tag experineces from Experience File as Venture Captial 
+    --> Translated from Stata function
 """
 def VC_tagging(experience_file_path):
+    # Load the venture capital experience data and filter for rows with a match
     df_vc_exp = pd.read_csv("/Users/sammizhu/Downloads/input/pb_investor_exp_Lk_verified.csv")
     df_vcp_exp = df_vc_exp[df_vc_exp['Match?'] == "Yes"]
     df_vcp_exp = df_vcp_exp[['LinkedIn_ID']]
@@ -107,17 +127,24 @@ def VC_tagging(experience_file_path):
     vc_ids = list(df_vcp_exp['company_id'])
 
     experience_file = pd.read_csv(experience_file_path)
+    
     # Iterate over rows and update columns
     for index, row in experience_file.iterrows():
         company_id = row['company_id']
+        
         if company_id in vc_ids:
             experience_file.loc[index, 'experience_type'] = 'VC'
+            
+            # If there is no end_year, then temporarily mark is current_year for calculation purposes
             end_year = row['end_year']
             if math.isnan(end_year):
                 end_year = 2024
+            
+            # Calculate experience length
             experience_file.loc[index, 'exp_length'] = end_year - row['start_year'] + 1
             if end_year > row['yearfounded'] and row['yearfounded'] - row['start_year'] > 0:
                 experience_file.loc[index, 'exp_length'] = row['yearfounded'] - row['start_year'] 
+
     experience_file.to_csv(experience_file_path, index=False)
 
 ##################################

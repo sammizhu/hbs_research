@@ -67,12 +67,10 @@ def prior_experience(stdized_url, founding_year):
                         # For each of these experiences, we'll go through the edu_history_dict that was previously populated in order to find
                         # whether or not by the point of *this* job experience, the person has had attended a top 50 school or gotten their grad degree
                         for (std_url, end, top50, highest_degree) in edu_history_dict:
-                            # Only count data if person attended this school before their company was founded
+                            # Only count data if person ended their schooling before their company was founded
                             if end < yearfounded:
-                                if top50 == 1:
-                                    top50_var = 1
-                                if highest_degree == "Graduate":
-                                    has_grad_degree = 1
+                                top50_var = (top50 == 1)
+                                has_grad_degree = (highest_degree == "Graduate")
                                 end_school_year = max(end, end_school_year)
                         data = (cik, cik_group, employee, std_url, profile_url, company_name, int(company_id), start_year, end_year, yearfounded, "", "", fulltitle, top50_var, has_grad_degree, end_school_year)
                         if data not in job_history_dict:
@@ -162,14 +160,14 @@ def VC_tagging(experience_file_path):
 # https://www.linkedin.com/in/meyermalka
 # https://www.linkedin.com/in/will-griffith-a51a9237
 
-prior_experience("https://www.linkedin.com/in/adelson", 2022)
+prior_experience("https://www.linkedin.com/in/jtlonsdale", 2014)
 columns = ['cik', 'cik_group', 'employee', 'std_url', 'profile_url', 'company_name', 'company_id', 'start_year', 
 'end_year', 'yearfounded', 'experience_type', 'exp_length', 'fulltitle', "Top_50", "has_grad_degree", "end_school"]
 
-with open('/Users/sammizhu/research/hbs_research/characteristics/data.txt', mode='w', newline='') as file:
+with open('/Users/sammizhu/research/hbs_research/characteristics/data.csv', mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(columns)
     writer.writerows(job_history_dict)
 
-start_up_tagging('/Users/sammizhu/research/hbs_research/characteristics/data.txt')
-VC_tagging('/Users/sammizhu/research/hbs_research/characteristics/data.txt')
+start_up_tagging('/Users/sammizhu/research/hbs_research/characteristics/data.csv')
+VC_tagging('/Users/sammizhu/research/hbs_research/characteristics/data.csv')

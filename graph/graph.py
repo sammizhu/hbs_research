@@ -18,6 +18,9 @@ std_errors = {
     'B&H Startup Founder': [0.007],
 }
 
+# Set seaborn style and font scale
+sns.set(font_scale = 1, style = 'white', rc=None)
+
 # Plot the coefficients with error bars for each label
 plt.figure(figsize=(12, 8))
 
@@ -28,9 +31,10 @@ errors = [error[0] for error in std_errors.values()]     # Extracting the error 
 plt.errorbar(range(len(labels)), values, yerr=errors, fmt='o', color='black', capsize=5)
 
 plt.axhline(y=0, color='black', linestyle='--')
-plt.xlabel('Dependent Variables')
-plt.ylabel('Coefficient')
-plt.xticks(range(len(labels)), labels, rotation=45, ha='right')
+plt.xlabel('Independent Variables', fontsize=24)  
+plt.ylabel('Coefficient', fontsize=24) 
+plt.xticks(range(len(labels)), labels, rotation=45, ha='right', fontsize=14.5)  
+plt.yticks(fontsize=12) 
 
 # Remove the box and title
 sns.despine()
